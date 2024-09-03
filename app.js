@@ -31,9 +31,10 @@ function GameBoard() {
 
 function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
     const board = GameBoard()
-
+    //shows board at start of game
     console.log(board.getBoard());
 
+    //sets each player state for the game
     const players = [
         {
           name: playerOneName,
@@ -48,7 +49,7 @@ function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
         }
     ];
 
-
+    //storage of winning combinations
     const winningCombo = () => [
         [0, 1, 2],
         [3, 4, 5],
@@ -73,7 +74,7 @@ function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
     const currentPlayer = () => player;
 
 
-    
+    //function to select a position on the board
     const selectPosition = (playerMarker) => {
         let position = prompt('Select a position');
         let positionInt = parseInt(position);
@@ -83,23 +84,29 @@ function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
         updatePlayerChoice(positionInt, playerMarker);
     }
 
+    //updates each players choices to an array, used to compare against winning combos
     const updatePlayerChoice = (position, playerInput) => {
         playerInput === 'X' ? players[0].choices[position] = position: players[1].choices[position] = position;
         console.log(`${currentPlayer().name}'s choices`);
         console.log(player.choices);
     }
 
+    //checks after each round if the current player has a winning combo
     const checkWin = () => {
         const winningCondition = winningCombo()
         for (let i = 0; i < winningCondition.length; i++) {
             if (winningCondition[i].every(element => currentPlayer().choices.includes(element))) {
                 return true;
+            } else if (board.getBoard().every(position => position !== null)){
+                console.log("It's a tie!");
+                return false;                
             } else {
                 console.log("no winner yet");
             };
         }
     }
 
+    //starts each round and displays results
     const playRound = () => {
         console.log(`${currentPlayer().name}'s turn`);
         if (selectPosition(currentPlayer().marker) === true){
@@ -108,7 +115,9 @@ function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
         };
         if (checkWin() === true){
             console.log(`${currentPlayer().name} wins!`);
-            return;
+            return
+        } else if (checkWin() === false) {
+            return
         }
         switchPlayer();
     }
