@@ -11,7 +11,8 @@ function GameBoard() {
         // Checks if a position is taken
         if (board[position] !== null) {
             //if taken, stops function and returns to the start
-            return ('Position taken! Choose another position');
+            console.log('Position taken! Choose another position');
+            return true;
         } else {
             board[position] = playerInput;
             console.log(getBoard());
@@ -76,12 +77,15 @@ function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
     const selectPosition = (playerMarker) => {
         let position = prompt('Select a position');
         let positionInt = parseInt(position);
-        board.placeMarker(positionInt, playerMarker);
+        if (board.placeMarker(positionInt, playerMarker) === true){
+            return true;
+        }
         updatePlayerChoice(positionInt, playerMarker);
     }
 
     const updatePlayerChoice = (position, playerInput) => {
         playerInput === 'X' ? players[0].choices[position] = position: players[1].choices[position] = position;
+        console.log(`${currentPlayer().name}'s choices`);
         console.log(player.choices);
     }
 
@@ -98,7 +102,10 @@ function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
 
     const playRound = () => {
         console.log(`${currentPlayer().name}'s turn`);
-        selectPosition(currentPlayer().marker);
+        if (selectPosition(currentPlayer().marker) === true){
+            console.log(`${currentPlayer().name} go again`);
+            return playRound();
+        };
         if (checkWin() === true){
             console.log(`${currentPlayer().name} wins!`);
             return;
