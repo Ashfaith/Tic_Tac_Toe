@@ -76,7 +76,7 @@ function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
 
     //function to select a position on the board
     const selectPosition = (playerMarker) => {
-        let position = prompt('Select a position');
+        // let position = prompt('Select a position');
         let positionInt = parseInt(position);
         if (board.placeMarker(positionInt, playerMarker) === true){
             return true;
@@ -127,5 +127,33 @@ function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
     return{playRound, switchPlayer, checkWin, selectPosition};
 }
 
-const game = GamePlay();
-game.playRound();
+// const game = GamePlay();
+// game.playRound();
+
+function Display() {
+    const game = GamePlay();
+    let tile
+
+    const selectTile = () => {
+        const positionTile = document.querySelectorAll('.position-tile');
+
+        function tileClick(event) {
+            tile = event.target.id;
+            console.log(tile);
+        }
+
+        positionTile.forEach(tile => {
+            tile.addEventListener('click', tileClick);
+        })
+    }
+
+
+    const markTile = () => {
+
+    }
+
+    return {selectTile};
+}
+
+const newGame = Display();
+newGame.selectTile()
