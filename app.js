@@ -16,20 +16,25 @@ function GameBoard() {
         } else {
             board[position] = playerInput;
             console.log(getBoard());
-            
+            return false;
         }
     }
+
+    const resetBoard = () => {
+        board = Array(9).fill(null);
+    };
     
     return {
         getBoard,
         placeMarker,
+        resetBoard,
     }
 }
 
 
 
 
-function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
+function GamePlay() {
     const board = GameBoard()
     //shows board at start of game
     console.log(board.getBoard());
@@ -37,12 +42,12 @@ function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
     //sets each player state for the game
     const players = [
         {
-          name: playerOneName,
+          name: '',
           marker: 'X',
           choices: Array(9).fill(null),
         },
         {
-          name: playerTwoName,
+          name: '',
           marker: 'O',
           choices: Array(9).fill(null),
 
@@ -61,13 +66,19 @@ function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
         [2, 4, 6]
     ];
 
+    const getPlayerName = () => {
+        players[0].name = prompt('Player 1, choose a name');
+        players[1].name = prompt('Player 2, choose a name');
+    }; 
+    getPlayerName()
+
     //initilaize player to player 1
     let player = players[0];
     
     //check which players turn
     const switchPlayer = () => {
         player = player === players[0] ? players[1] : players[0];
-        playRound();
+        gameState = (`${currentPlayer().name}'s turn`);
     };
 
     //update player
@@ -75,13 +86,13 @@ function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
 
 
     //function to select a position on the board
-    const selectPosition = (playerMarker) => {
-        // let position = prompt('Select a position');
-        let positionInt = parseInt(position);
-        if (board.placeMarker(positionInt, playerMarker) === true){
+    const selectPosition = (position) => {
+        if (board.placeMarker(position, currentPlayer().marker)){
+            console.log(`${currentPlayer().name}'s go again`);
             return true;
         }
-        updatePlayerChoice(positionInt, playerMarker);
+        updatePlayerChoice(position, currentPlayer().marker);
+        return false
     }
 
     //updates each players choices to an array, used to compare against winning combos
@@ -98,62 +109,100 @@ function GamePlay(playerOneName = "Player One", playerTwoName = "Player Two") {
             if (winningCondition[i].every(element => currentPlayer().choices.includes(element))) {
                 return true;
             } else if (board.getBoard().every(position => position !== null)){
-                console.log("It's a tie!");
                 return false;                
-            } else {
-                console.log("no winner yet");
             };
         }
     }
 
     //starts each round and displays results
-    const playRound = () => {
-        console.log(`${currentPlayer().name}'s turn`);
-        if (selectPosition(currentPlayer().marker) === true){
-            console.log(`${currentPlayer().name} go again`);
-            return playRound();
-        };
-        if (checkWin() === true){
-            console.log(`${currentPlayer().name} wins!`);
-            return
-        } else if (checkWin() === false) {
-            return
-        }
+    let gameState = (`${currentPlayer().name}'s turn`);
+    const gameStateMsg = () => gameState;
+    const playRound = (position) => {
+        
+        if (selectPosition(position)) return;
+        
+        const result = checkWin();
+        if (result === true) {
+            
+            gameState = (`${currentPlayer().name} wins!`);
+            return;
+        } else if (result === false) {
+            gameState = ("It's a tie!");
+            return;
+        } 
         switchPlayer();
-    }
+    };
+
+    const newGame = () => {
+        board.resetBoard();
+        players.forEach(player => player.choices.fill(null));
+        getPlayerName();
+        console.log(board.getBoard());
+        player = players[0];
+        gameState = (`${currentPlayer().name}'s turn`);
+    };
 
 
 
-    return{playRound, switchPlayer, checkWin, selectPosition};
+    return{
+        gameStateMsg,
+        playRound, 
+        switchPlayer, 
+        checkWin, 
+        selectPosition, 
+        currentPlayer: () => player,
+        getBoard: board.getBoard, 
+        newGame,
+    };
 }
 
-// const game = GamePlay();
-// game.playRound();
 
 function Display() {
     const game = GamePlay();
-    let tile
+    const gameGrid = document.querySelector('#game-grid');
+    const playerTurnDisplay = document.querySelector('#player-turn');
 
-    const selectTile = () => {
-        const positionTile = document.querySelectorAll('.position-tile');
 
-        function tileClick(event) {
-            tile = event.target.id;
-            console.log(tile);
-        }
+    //Handles which tile is selected
+    const updateBoard = () => {
 
-        positionTile.forEach(tile => {
-            tile.addEventListener('click', tileClick);
-        })
+        // Clears out old board, prevents duplicates from being created
+        gameGrid.innerHTML = '';
+
+        //gets up to date board and player turn
+        const board = game.getBoard();
+        const gameStateMsg = game.gameStateMsg()
+
+        //Display player turn
+        playerTurnDisplay.textContent = gameStateMsg;
+        
+        
+        board.forEach((tile, index) => {
+            const tileButton = document.createElement('button');
+            tileButton.classList.add('tile');
+            tileButton.dataset.tile = index;
+            tileButton.textContent = tile === null ? '' : tile;
+            tileButton.addEventListener('click', () => {
+               game.playRound(index);
+               updateBoard();
+            });
+            gameGrid.appendChild(tileButton);
+        });    
+    };
+    updateBoard();
+
+    clearGame = () => {
+        const startRoundBtn = document.querySelector('#start-round');
+
+        startRoundBtn.addEventListener('click', () => {
+            game.newGame();
+            updateBoard();
+        });
     }
-
-
-    const markTile = () => {
-
-    }
-
-    return {selectTile};
+    clearGame();
 }
 
-const newGame = Display();
-newGame.selectTile()
+document.addEventListener('DOMContentLoaded', () => {
+    Display();
+});
+
